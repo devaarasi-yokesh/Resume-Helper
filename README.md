@@ -32,6 +32,7 @@ This project is an AI-powered Resume Matcher that compares a user's resume with 
 ---
 
 🧰 Built With
+
 React – Frontend
 
 Express.js – Backend
@@ -42,7 +43,10 @@ pdf-parse / mammoth – Resume & JD parsing
 
 multer – File upload handling
 
+---
+
 🙌 Future Enhancements
+
 Save history of uploads and results
 
 Multi-language support
@@ -54,8 +58,10 @@ Authentication
 ---
 
 📄 License
+
 This project is open-source under the MIT License.
 
 ---
 🤝 Acknowledgments
+
 Thanks to OpenAI for the powerful APIs and to all the open-source libraries that made this project smooth to build!
