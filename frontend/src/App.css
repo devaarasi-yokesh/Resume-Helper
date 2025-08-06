@@ -6,7 +6,6 @@
 @import "tailwindcss/preflight";
 @tailwind utilities;
 
-/* ...existing code... */
 
 @theme inline {
 
@@ -87,7 +86,7 @@
 
   --background: oklch(1 0 0);
 
-  --foreground: oklch(0.145 0 0);
+  --foreground: oklch(54.955% 0.11195 21.355);
 
   --card: oklch(1 0 0);
 
@@ -97,7 +96,7 @@
 
   --popover-foreground: oklch(0.145 0 0);
 
-  --primary: oklch(0.205 0 0);
+  --primary: oklch(37.075% 0.10432 259.482);
 
   --primary-foreground: oklch(0.985 0 0);
 

@@ -9,9 +9,9 @@ const app = express();
 const upload = multer();
 
 app.use(cors());
-app.use(json());
+app.use(express.json());
 
-app.post("/analyze", upload.fields([{ name: "resume" }, { name: "job" }]), analyzeRoute);
+app.use("/analyze", analyzeRoute);
 
 app.listen(process.env.PORT, () => {
   console.log(`Server running on http://localhost:${process.env.PORT}`);
