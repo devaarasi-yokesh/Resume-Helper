@@ -15,10 +15,17 @@ const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 });
 
+const useOpenAI = process.env.USE_OPENAI === 'true';
 
 // Function to get OpenAI embeddings
 // This function takes a text input and returns its embedding vector
 async function getEmbedding(text) {
+    if (!useOpenAI) {
+    // Return fake embedding (just a dummy vector of fixed length)
+    return Array(1536).fill(0.5); // same shape as real embedding
+  }
+
+
   try {
     const response = await openai.embeddings.create({
       model: 'text-embedding-3-small',
@@ -60,6 +67,10 @@ async function extractSkillsFromText(text, label) {
   return res.status(400).json({ error: 'Missing resume or job description text.' });
   }
 
+    if (!useOpenAI) {
+  // Return dummy skills for development
+  return ["JavaScript", "Teamwork", "Agile"];}
+
   const prompt = `Extract only a JSON array (no explanations) of skills mentioned in this ${label}. Return result like ["JavaScript", "Teamwork", "Agile"]:"${text}"`;
 
 
@@ -84,6 +95,11 @@ async function extractSkillsFromText(text, label) {
 
 // Function to generate a cover letter using OpenAI
 async function generateCoverLetter(resumeText, jobText) {
+  if (!useOpenAI) {
+  return "This is a dummy cover letter for development.";
+}
+
+
   const prompt = `
 Using the following resume and job description, write a personalized and concise cover letter tailored for this role. Address the hiring manager, highlight relevant experience, and keep the tone professional and enthusiastic. Keep it under 300 words.
 
@@ -142,16 +158,21 @@ router.post('/', upload.fields([{ name: 'resume' }, { name: 'job' }]), async (re
       (skill) => !normalize(resumeSkills).includes(skill)
     );
 
+    console.log('Missing Skills:', missingSkills);
+
     // Optional: Capitalize results for UI
     function capitalize(s) {
       return s.charAt(0).toUpperCase() + s.slice(1);
     }
 
+
+    const tempMissingSkills = ['GraphQL', 'Unit Testing']; // Temporary stub for missing skills
+
     const result = {
        matchScore:Math.round((matchedSkills.length / jobSkills.length) * 100),
   // Optional: stub values or remove these for now
      matchedSkills: matchedSkills.map(capitalize),
-     missingSkills: missingSkills.map(capitalize),
+     missingSkills:  tempMissingSkills.map(capitalize),
      coverLetter: coverLetter 
 };
 

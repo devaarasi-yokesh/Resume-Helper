@@ -4,6 +4,7 @@ import { Progress } from "./components/ui/progress";
 import { Textarea } from "./components/ui/textarea";
 import { Input } from "./components/ui/input";
 import './App.css';
+import jsPDF from "jspdf";
 
 export default function App() {
   const [jobFile, setJobFile] = useState(null);
@@ -49,6 +50,56 @@ export default function App() {
       setLoading(false);
     }
   };
+
+  // Function to download the cover letter
+ const handleDownload = async () => {
+  console.log(`Downloading cover letter: ${result.coverLetter}`);
+  let coverLetter = result.coverLetter || "Dear Hiring Manager,\n\nI'm excited to apply for the role...";
+
+  try {
+    const response = await fetch('http://localhost:3001/download-cover-letter', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ coverLetter }), // make sure `coverLetter` is available
+    });
+
+    if (!response.ok) {
+      throw new Error('Failed to download cover letter');
+    }
+
+    const blob = await response.blob();
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+
+    // Set filename — same as backend's format
+    a.download = `cover-letter-${Date.now()}.docx`;
+    document.body.appendChild(a);
+    a.click();
+
+    // Clean up
+    a.remove();
+    window.URL.revokeObjectURL(url);
+  } catch (error) {
+    console.error('Download error:', error);
+    alert('Something went wrong while downloading the file.');
+  }
+};
+
+const handleDownloadPDF = () => {
+  const doc = new jsPDF();
+  
+  let coverLetter = result.coverLetter || "Dear Hiring Manager,\n\nI'm excited to apply for the role...";
+
+  const lines = coverLetter.split('\n');
+  lines.forEach((line, index) => {
+    doc.text(line, 10, 10 + index * 10);
+  });
+
+  doc.save(`cover-letter-${Date.now()}.pdf`);
+};
 
   return (
     <div
@@ -116,8 +167,39 @@ export default function App() {
           </Button>
         </div>
 
-        {loading && <p>Analyzing... Please wait.</p>}
-        {error && <p style={{ color: 'red' }}>Error: {error}</p>}
+        {loading && (
+            <div className="flex items-center space-x-2 text-blue-600">
+              <svg
+                className="animate-spin h-2 w-2 text-blue-600"
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 108 108"
+              >
+                <circle
+                  className="opacity-25"
+                  cx="12"
+                  cy="12"
+                  r="7"
+                  stroke="currentColor"
+                  strokeWidth="4"
+                ></circle>
+                <path
+                  className="opacity-75"
+                  fill="currentColor"
+                  d="M4 12a8 8 0 018-8v8H4z"
+                ></path>
+              </svg>
+              <span className="text-sm">Analyzing your resume & job description...</span>
+            </div>
+          )}
+
+        {error && (
+          <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
+            <strong className="font-bold">Error:</strong>
+            <span className="block sm:inline ml-1">{error}</span>
+          </div>
+        )}
+
 
       {result && (
         <div>
@@ -132,14 +214,23 @@ export default function App() {
           </ul>
 
           <h3>Missing Skills:</h3>
-          <ul>
+          <div className="flex flex-wrap gap-2 mt-2">
+            <ul>
             {result.missingSkills.map((skill) => (
-              <li key={skill}>{skill}</li>
+              <li
+                key={skill}
+                style={{ backgroundColor: 'red', color: 'white', padding: '4px 8px', borderRadius: '4px' }}
+                className="bg-red-100 text-red-700 px-3 py-1 rounded-full text-sm font-medium"
+              >
+                {skill}
+              </li>
             ))}
-          </ul>
+            </ul>
+          </div>
 
-          {result.coverLetter && (
-        <div style={{ marginTop: '2rem' }}>
+
+          {result.coverLetter && !loading && (
+        <div className="animate-fadeIn" style={{ marginTop: '2rem' }}>
           <h3>Generated Cover Letter</h3>
           <textarea
             value={result.coverLetter}
@@ -161,6 +252,29 @@ export default function App() {
           >
             Copy Cover Letter
           </button>
+          {coverLetter && 
+          <button onClick={handleDownload}  style={{
+                backgroundColor: "var(--color-primary)",
+                color: "var(--color-primary-foreground)",
+                borderRadius: "var(--radius-md)",
+              }}  disabled={loading || !result}>Download Cover Letter</button>
+          }
+          <button
+              onClick={handleDownloadPDF}
+              style={{
+                marginTop: '0.5rem',
+                padding: '0.5rem 1rem',
+                cursor: 'pointer',
+                background: '#1976D2',
+                color: 'white',
+                border: 'none',
+                borderRadius: '4px',
+                marginLeft: '0.5rem'
+              }}
+            >
+              Download PDF
+            </button>
+
         </div>
       )}
 
