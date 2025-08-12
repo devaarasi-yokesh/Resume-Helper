@@ -17,6 +17,14 @@ export default function App() {
   const [missingSkills, setMissingSkills] = useState([]);
   const [coverLetter, setCoverLetter] = useState("");
 
+// Suggestions for missing skills
+  const skillSuggestions = {
+  "GraphQL": "Consider learning GraphQL basics via tutorials or courses to improve your API querying skills.",
+  "Unit Testing": "Explore testing frameworks like Jest or Mocha to write effective unit tests for your projects.",
+  // Add more if needed
+};
+
+
   const handleAnalyze = async () => {
     
     setLoading(true);
@@ -227,6 +235,21 @@ const handleDownloadPDF = () => {
             ))}
             </ul>
           </div>
+
+          {/* Suggestions for Missing Skills: */}
+          {result.missingSkills.length > 0 && (
+          <section style={{ marginTop: "1rem" }}>
+            <h3>Suggestions for Missing Skills:</h3>
+            <ul style={{ listStyleType: "disc", paddingLeft: "20px" }}>
+              {result.missingSkills.map(skill => (
+                <li key={skill} style={{ marginBottom: "0.5rem" }}>
+                  <strong>{skill}:</strong> {skillSuggestions[skill] || "No suggestion available yet."}
+                </li>
+              ))}
+            </ul>
+          </section>
+        )}
+
 
 
           {result.coverLetter && !loading && (
