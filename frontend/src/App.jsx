@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useState,useEffect } from "react";
+
 import { Button } from "./components/ui/button";
 import { Progress } from "./components/ui/progress";
 import { Textarea } from "./components/ui/textarea";
@@ -6,16 +7,43 @@ import { Input } from "./components/ui/input";
 import './App.css';
 import jsPDF from "jspdf";
 
+
+
+
 export default function App() {
   const [jobFile, setJobFile] = useState(null);
   const [resumeFile, setResumeFile] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [result, setResult] = useState(null);
+  const [uploadHistory, setUploadHistory] = useState([]); 
   const [matchScore, setMatchScore] = useState(null);
   const [matchedSkills, setMatchedSkills] = useState([]);
   const [missingSkills, setMissingSkills] = useState([]);
   const [coverLetter, setCoverLetter] = useState("");
+
+
+
+// Load initial upload history from localStorage
+// This will run once when the component mounts
+// and populate the uploadHistory state with any saved data.
+// This allows the app to remember previous uploads even after a page refresh.
+useEffect(() => {
+  const savedHistory = localStorage.getItem("uploadHistory");
+  if (savedHistory) setUploadHistory(JSON.parse(savedHistory));
+}, []);
+
+const history = JSON.parse(localStorage.getItem('uploadHistory'));
+console.log(history);
+
+// if (!history || history.length === 0) {
+//   console.log("No upload history found.");
+// } else {
+// history.forEach(file => {
+//   console.log(file.name, file.type, file.data.slice(0, 50) + '...');
+// });
+// }
+
 
 // Suggestions for missing skills
   const skillSuggestions = {
@@ -155,11 +183,48 @@ const handleDownloadPDF = () => {
                 return;
               }
               setResumeFile(file);
+
+              const reader = new FileReader();
+                reader.onload = () => {
+                  const fileData = reader.result; // this is base64 string
+
+                  const uploadHistory = JSON.parse(localStorage.getItem("uploadHistory")) || [];
+
+              // Save to history
+              const newEntry = {
+                name: file.name,
+                type: file.type,
+                date: new Date().toLocaleString()
+              };
+              const updatedHistory = [newEntry, ...uploadHistory];
+              setUploadHistory(updatedHistory);
+              localStorage.setItem("uploadHistory", JSON.stringify(updatedHistory));
+            };
+              reader.readAsDataURL(file);
             }} />
             {resumeFile && (
               <p className="text-sm text-gray-600 mt-1">📄 {resumeFile.name}</p>
             )}
           </label>
+
+          {/* Display upload history */}
+          {uploadHistory.length > 0 && (
+            <div style={{ marginTop: "1rem" }}>
+              <h3>Upload History</h3>
+              <ul>
+                {uploadHistory.map((file, index) => (
+                  <li key={index}>
+                    {file.name} ({file.type}) - {file.date}
+                  </li>
+                ))}
+              </ul>
+              <button onClick={() => {
+                setUploadHistory([]);
+                localStorage.removeItem("uploadHistory");
+              }}>Clear History</button>
+            </div>
+          )}
+
 
           <Button
             className="w-full"
