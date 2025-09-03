@@ -1,14 +1,11 @@
-import { useState,useEffect } from "react";
-
+import { useState, useEffect } from "react";
+import React from "react";
 import { Button } from "./components/ui/button";
 import { Progress } from "./components/ui/progress";
 import { Textarea } from "./components/ui/textarea";
-import { Input } from "./components/ui/input";
-import './App.css';
+import FileUploader from "./components/ui/FileUploader";
 import jsPDF from "jspdf";
-
-
-
+import "./App.css";
 
 export default function App() {
   const [jobFile, setJobFile] = useState(null);
@@ -16,15 +13,13 @@ export default function App() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [result, setResult] = useState(null);
-  const [uploadHistory, setUploadHistory] = useState([]); 
-  const [matchScore, setMatchScore] = useState(null);
+  const [uploadHistory, setUploadHistory] = useState([]);
   const [matchedSkills, setMatchedSkills] = useState([]);
   const [missingSkills, setMissingSkills] = useState([]);
+  const [matchScore, setMatchScore] = useState(0);
   const [coverLetter, setCoverLetter] = useState("");
 
-
-
-// Load initial upload history from localStorage
+ // Load initial upload history from localStorage
 // This will run once when the component mounts
 // and populate the uploadHistory state with any saved data.
 // This allows the app to remember previous uploads even after a page refresh.
@@ -138,239 +133,299 @@ const handleDownloadPDF = () => {
 };
 
   return (
-    <div
-      className="min-h-screen p-8"
-      style={{
-        backgroundColor: "var(--color-background)",
-        color: "var(--color-foreground)",
-      }}
-    >
       <div
-        className="max-w-3xl mx-auto shadow-xl p-6 space-y-6"
+  style={{
+    width: "100%",
+    maxWidth: "900px",
+    margin: "0 auto",
+    display: "flex",
+    flexDirection: "column",
+    gap: "2.5rem",
+    padding: "2rem",
+    fontFamily: "'Inter', sans-serif",
+    color: "#1f2937", // dark gray
+  }}
+>
+  {/* Title */}
+  <h1
+    style={{
+      textAlign: "center",
+      fontSize: "3rem",
+      fontWeight: 700,
+      lineHeight: 1.2,
+      color: "#111827",
+    }}
+  >
+    JobMatch <span style={{ color: "#2563eb" }}>AI</span>
+  </h1>
+
+  <p
+    style={{
+      textAlign: "center",
+      fontSize: "1.25rem",
+      color: "#4b5563",
+      lineHeight: 1.6,
+    }}
+  >
+    Upload your resume & job description to get instant feedback.
+  </p>
+
+  {/* Upload Section */}
+  <div
+    style={{
+      backgroundColor: "#ffffff",
+      borderRadius: "1rem",
+      boxShadow: "0 4px 12px rgba(0,0,0,0.05)",
+      padding: "2rem",
+      display: "flex",
+      flexDirection: "column",
+      gap: "1.5rem",
+    }}
+  >
+    <div>
+      <label
         style={{
-          backgroundColor: "var(--color-card)",
-          color: "var(--color-card-foreground)",
-          borderRadius: "var(--radius-xl)",
+          display: "block",
+          fontSize: "0.875rem",
+          fontWeight: 500,
+          color: "#374151",
+          marginBottom: "0.5rem",
         }}
       >
-        <h1 className="text-2xl font-bold text-center">JobMatch AI</h1>
+        Upload Job Description
+      </label>
+      <FileUploader
+        label="Job Description"
+        file={jobFile}
+        setFile={setJobFile}
+        setUploadHistory={setUploadHistory}
+      />
+      {jobFile && (
+        <p className="file-name" style={{ fontSize: "0.875rem", color: "#6b7280", marginTop: "0.25rem" }}>
+          📄 {jobFile.name}
+        </p>
+      )}
+    </div>
 
-        <div className="space-y-4">
-          <label className="block">
-            <span className="text-sm font-medium">Upload Job Description</span>
-            <Input type="file" onChange={(e) =>  {
-              const file = e.target.files[0];
-              if (!file) return;
-              if (!["application/pdf", "application/vnd.openxmlformats-officedocument.wordprocessingml.document"].includes(file.type)) {
-                alert("Only PDF or DOCX files are allowed");
-                return;
-              }
-              setJobFile(file);
-            }}
-            /> 
-            {jobFile && (
-              <p className="text-sm text-gray-600 mt-1">📄 {jobFile.name}</p>
-            )}
-          </label>
+    <div>
+      <label
+        style={{
+          display: "block",
+          fontSize: "0.875rem",
+          fontWeight: 500,
+          color: "#374151",
+          marginBottom: "0.5rem",
+        }}
+      >
+        Upload Your Resume
+      </label>
+      <FileUploader
+        label="Resume"
+        file={resumeFile}
+        setFile={setResumeFile}
+        setUploadHistory={setUploadHistory}
+      />
+      {resumeFile && (
+        <p className="file-name" style={{ fontSize: "0.875rem", color: "#6b7280", marginTop: "0.25rem" }}>
+          📄 {resumeFile.name}
+        </p>
+      )}
+    </div>
 
-          <label className="block">
-            <span className="text-sm font-medium">Upload Your Resume</span>
-            <Input type="file" onChange={(e) => {
-              const file = e.target.files[0];
-              if (!file) return;
-              if (!["application/pdf", "application/vnd.openxmlformats-officedocument.wordprocessingml.document"].includes(file.type)) {
-                alert("Only PDF or DOCX files are allowed");
-                return;
-              }
-              setResumeFile(file);
+    <Button
+     className='button'
+      style={{
+        width: "100%",
+        backgroundColor: "#2563eb",
+        color: "#ffffff",
+        fontWeight: 600,
+        padding: "0.75rem",
+        borderRadius: "0.5rem",
+        cursor: "pointer",
+        border: "none",
+        fontSize: "1rem",
+      }}
+      onClick={handleAnalyze}
+      disabled={!jobFile || !resumeFile || loading}
+    >
+      {loading ? "Analyzing..." : "Analyze Job Match"}
+    </Button>
 
-              const reader = new FileReader();
-                reader.onload = () => {
-                  const fileData = reader.result; // this is base64 string
+    {uploadHistory.length > 0 && (
+      <div style={{ paddingTop: "1rem", borderTop: "1px solid #e5e7eb" }}>
+        <h3
+          style={{
+            fontSize: "0.875rem",
+            fontWeight: 600,
+            color: "#374151",
+            marginBottom: "0.5rem",
+          }}
+        >
+          Upload History
+        </h3>
+        <ul style={{ fontSize: "0.875rem", color: "#4b5563", marginBottom: "0.5rem" }}>
+          {uploadHistory.map((file, index) => (
+            <li key={index}>
+              {file.name} ({file.type}) – {file.date}
+            </li>
+          ))}
+        </ul>
+        <button
+         className='button'
+          style={{
+            fontSize: "0.75rem",
+            color: "#ef4444",
+            cursor: "pointer",
+            textDecoration: "underline",
+            background: "none",
+            border: "none",
+            padding: 0,
+          }}
+          onClick={() => {
+            setUploadHistory([]);
+            localStorage.removeItem("uploadHistory");
+          }}
+        >
+          Clear History
+        </button>
+      </div>
+    )}
+  </div>
 
-                  const uploadHistory = JSON.parse(localStorage.getItem("uploadHistory")) || [];
+  {/* Results Section */}
+  {result && (
+    <div
+      style={{
+        backgroundColor: "#ffffff",
+        borderRadius: "1rem",
+        boxShadow: "0 4px 12px rgba(0,0,0,0.05)",
+        padding: "2rem",
+        display: "flex",
+        flexDirection: "column",
+        gap: "1.5rem",
+      }}
+       className="fade-in"
+    >
+      {/* Match Score */}
+      <div>
+        <h2
+          style={{
+            fontSize: "1.125rem",
+            fontWeight: 600,
+            color: "#374151",
+            marginBottom: "0.5rem",
+          }}
+        >
+          Match Score
+        </h2>
+        <Progress className='progress-bar-fill' value={result.matchScore} style={{ marginBottom: "0.5rem" }} />
+        <p style={{ fontSize: "0.875rem", color: "#4b5563" }}>
+          {result.matchScore}% match with this role
+        </p>
+      </div>
 
-              // Save to history
-              const newEntry = {
-                name: file.name,
-                type: file.type,
-                date: new Date().toLocaleString()
-              };
-              const updatedHistory = [newEntry, ...uploadHistory];
-              setUploadHistory(updatedHistory);
-              localStorage.setItem("uploadHistory", JSON.stringify(updatedHistory));
-            };
-              reader.readAsDataURL(file);
-            }} />
-            {resumeFile && (
-              <p className="text-sm text-gray-600 mt-1">📄 {resumeFile.name}</p>
-            )}
-          </label>
-
-          {/* Display upload history */}
-          {uploadHistory.length > 0 && (
-            <div style={{ marginTop: "1rem" }}>
-              <h3>Upload History</h3>
-              <ul>
-                {uploadHistory.map((file, index) => (
-                  <li key={index}>
-                    {file.name} ({file.type}) - {file.date}
-                  </li>
-                ))}
-              </ul>
-              <button onClick={() => {
-                setUploadHistory([]);
-                localStorage.removeItem("uploadHistory");
-              }}>Clear History</button>
-            </div>
-          )}
-
-
-          <Button
-            className="w-full"
-            onClick={handleAnalyze}
-            disabled={!jobFile || !resumeFile || loading}
-            style={{
-              backgroundColor: "var(--color-primary)",
-              color: "var(--color-primary-foreground)",
-              borderRadius: "var(--radius-md)",
-            }}
-          >
-            {loading ? "Analyzing..." : "Analyze Job Match"}
-          </Button>
-        </div>
-
-        {loading && (
-            <div className="flex items-center space-x-2 text-blue-600">
-              <svg
-                className="animate-spin h-2 w-2 text-blue-600"
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 108 108"
-              >
-                <circle
-                  className="opacity-25"
-                  cx="12"
-                  cy="12"
-                  r="7"
-                  stroke="currentColor"
-                  strokeWidth="4"
-                ></circle>
-                <path
-                  className="opacity-75"
-                  fill="currentColor"
-                  d="M4 12a8 8 0 018-8v8H4z"
-                ></path>
-              </svg>
-              <span className="text-sm">Analyzing your resume & job description...</span>
-            </div>
-          )}
-
-        {error && (
-          <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
-            <strong className="font-bold">Error:</strong>
-            <span className="block sm:inline ml-1">{error}</span>
-          </div>
-        )}
-
-
-      {result && (
-        <div>
-          <h2>Match Score: {result.matchScore}%</h2>
-          <progress value={result.matchScore} max="100" style={{ width: '100%' }}></progress>
-
-          <h3>Matched Skills:</h3>
-          <ul>
-            {result.matchedSkills.map((skill) => (
-              <li key={skill}>{skill}</li>
-            ))}
-          </ul>
-
-          <h3>Missing Skills:</h3>
-          <div className="flex flex-wrap gap-2 mt-2">
-            <ul>
-            {result.missingSkills.map((skill) => (
-              <li
-                key={skill}
-                style={{ backgroundColor: 'red', color: 'white', padding: '4px 8px', borderRadius: '4px' }}
-                className="bg-red-100 text-red-700 px-3 py-1 rounded-full text-sm font-medium"
-              >
-                {skill}
-              </li>
-            ))}
-            </ul>
-          </div>
-
-          {/* Suggestions for Missing Skills: */}
-          {result.missingSkills.length > 0 && (
-          <section style={{ marginTop: "1rem" }}>
-            <h3>Suggestions for Missing Skills:</h3>
-            <ul style={{ listStyleType: "disc", paddingLeft: "20px" }}>
-              {result.missingSkills.map(skill => (
-                <li key={skill} style={{ marginBottom: "0.5rem" }}>
-                  <strong>{skill}:</strong> {skillSuggestions[skill] || "No suggestion available yet."}
-                </li>
-              ))}
-            </ul>
-          </section>
-        )}
-
-
-
-          {result.coverLetter && !loading && (
-        <div className="animate-fadeIn" style={{ marginTop: '2rem' }}>
-          <h3>Generated Cover Letter</h3>
-          <textarea
-            value={result.coverLetter}
-            readOnly
-            rows={12}
-            style={{ width: '100%', padding: '1rem', fontFamily: 'monospace', fontSize: '1rem' }}
-          />
-          <button
-            onClick={() => navigator.clipboard.writeText(result.coverLetter)}
-            style={{
-              marginTop: '0.5rem',
-              padding: '0.5rem 1rem',
-              cursor: 'pointer',
-              background: '#4CAF50',
-              color: 'white',
-              border: 'none',
-              borderRadius: '4px'
-            }}
-          >
-            Copy Cover Letter
-          </button>
-          {coverLetter && 
-          <button onClick={handleDownload}  style={{
-                backgroundColor: "var(--color-primary)",
-                color: "var(--color-primary-foreground)",
-                borderRadius: "var(--radius-md)",
-              }}  disabled={loading || !result}>Download Cover Letter</button>
-          }
-          <button
-              onClick={handleDownloadPDF}
+      {/* Skills */}
+      <div>
+        <h3 style={{ fontWeight: 600, color: "#374151", marginBottom: "0.5rem" }}>Matched Skills</h3>
+        <div style={{ display: "flex", flexWrap: "wrap", gap: "0.5rem" }}>
+          {result.matchedSkills.map((skill) => (
+            <span
+              key={skill}
+              className="skill-badge"
               style={{
-                marginTop: '0.5rem',
-                padding: '0.5rem 1rem',
-                cursor: 'pointer',
-                background: '#1976D2',
-                color: 'white',
-                border: 'none',
-                borderRadius: '4px',
-                marginLeft: '0.5rem'
+                backgroundColor: "#dcfce7",
+                color: "#15803d",
+                padding: "0.25rem 0.75rem",
+                borderRadius: "9999px",
+                fontSize: "0.875rem",
               }}
             >
-              Download PDF
-            </button>
+              {skill}
+            </span>
+          ))}
+        </div>
+      </div>
 
+      <div>
+        <h3 style={{ fontWeight: 600, color: "#374151", marginBottom: "0.5rem" }}>Missing Skills</h3>
+        <div style={{ display: "flex", flexWrap: "wrap", gap: "0.5rem" }}>
+          {result.missingSkills.map((skill) => (
+            <span
+              key={skill}
+              style={{
+                backgroundColor: "#fee2e2",
+                color: "#b91c1c",
+                padding: "0.25rem 0.75rem",
+                borderRadius: "9999px",
+                fontSize: "0.875rem",
+              }}
+            >
+              {skill}
+            </span>
+          ))}
+        </div>
+      </div>
+
+      {/* Cover Letter */}
+      {result.coverLetter && (
+        <div>
+          <h3
+            style={{
+              fontWeight: 600,
+              color: "#374151",
+              marginBottom: "0.5rem",
+            }}
+          >
+            Generated Cover Letter
+          </h3>
+          <Textarea
+            value={result.coverLetter}
+            readOnly
+            style={{
+              width: "100%",
+              fontSize: "0.875rem",
+              padding: "0.75rem",
+              borderRadius: "0.5rem",
+              border: "1px solid #d1d5db",
+              resize: "vertical",
+            }}
+            rows={10}
+          />
+          <div style={{ display: "flex", gap: "0.75rem", marginTop: "0.75rem" }}>
+            <Button
+              variant="secondary"
+              className='button'
+              onClick={() => navigator.clipboard.writeText(result.coverLetter)}
+              style={{ backgroundColor: "#f3f4f6", color: "#1f2937", fontWeight: 500 }}
+            >
+              Copy
+            </Button>
+            <Button  className='button' onClick={handleDownload}>Download DOCX</Button>
+            <Button  className='button' onClick={handleDownloadPDF} variant="outline">
+              Download PDF
+            </Button>
+          </div>
         </div>
       )}
-
-              </div>
-            )}
-        
-
-            </div>
     </div>
+  )}
+
+    {/* Error */}
+    {error && (
+      <div
+        style={{
+          backgroundColor: "#fef2f2",
+          border: "1px solid #fecaca",
+          color: "#b91c1c",
+          padding: "0.75rem 1rem",
+          borderRadius: "0.5rem",
+        }}
+      >
+        <strong>Error:</strong> {error}
+      </div>
+    )}
+</div>
+
+   
   );
 }
