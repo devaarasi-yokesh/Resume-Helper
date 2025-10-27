@@ -1,6 +1,6 @@
 import express from 'express';
 import multer from 'multer';
-import pdf from 'pdf-parse'; 
+import * as pdf from 'pdf-parse'; 
 import fs from 'fs';
 import mammoth from 'mammoth'; 
 import {OpenAI} from 'openai';
