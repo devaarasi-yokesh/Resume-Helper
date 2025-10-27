@@ -15,6 +15,12 @@ app.use(express.json());
 app.use("/analyze", analyzeRoute);
 app.use("/download-cover-letter", downloadRoute);
 
+app.get('/', (req, res) => {
+  res.send('Resume Helper API is running.');
+});
+  
+const PORT = process.env.PORT || 3001;
+
 app.listen(process.env.PORT, () => {
   console.log(`Server running on http://localhost:${process.env.PORT}`);
 });
