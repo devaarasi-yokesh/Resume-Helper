@@ -5,6 +5,7 @@ import { config } from "dotenv";
 import analyzeRoute from "./routes/analyze.js";
 import downloadRoute from "./routes/download.js";
 import path from "path";
+import { fileURLToPath } from "url";
 
 config();
 const app = express();
@@ -13,6 +14,9 @@ const upload = multer();
 app.use(cors());
 app.use(express.json());
 
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 // Serve frontend
 const buildPath = path.join(__dirname, "../frontend/dist");;
