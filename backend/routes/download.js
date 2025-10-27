@@ -1,9 +1,7 @@
 // routes/download.js
 import express from 'express';
 import { Document, Packer, Paragraph, TextRun } from 'docx';
-import fs from 'fs';
-import path from 'path';
-import { fileURLToPath } from 'url';
+
 
 const router = express.Router();
 
