@@ -136,12 +136,12 @@ const handleDownloadPDF = () => {
       <div
   style={{
     width: "100%",
-    maxWidth: "900px",
-    margin: "0 auto",
+    maxWidth: "1200px",
+    //margin: "0 auto",
     display: "flex",
     flexDirection: "column",
     gap: "2.5rem",
-    padding: "2rem",
+    padding: "0.2rem",
     fontFamily: "'Inter', sans-serif",
     color: "#1f2937", // dark gray
   }}
@@ -152,11 +152,15 @@ const handleDownloadPDF = () => {
       textAlign: "center",
       fontSize: "3rem",
       fontWeight: 700,
+      fontFamily: '"Segoe UI", Tahoma, Geneva, Verdana, sans-serif',
       lineHeight: 1.2,
       color: "#111827",
+      backgroundColor: "#e0e7ff",
+      padding: "1rem",
+      borderRadius: "0.75rem",
     }}
   >
-    JobMatch <span style={{ color: "#2563eb" }}>AI</span>
+    JOBMATCH <span style={{ color: "orange" }}>AI</span>
   </h1>
 
   <p
